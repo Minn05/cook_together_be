@@ -6,7 +6,7 @@ export const generateJsonWebToken = ( idPerson: string ): string => {
 
     try {
 
-        return jwt.sign( { idPerson }, process.env.TOKEN_SECRET || 'PhuotNha', {
+        return jwt.sign( { idPerson }, process.env.TOKEN_SECRET || 'cook_together', {
             expiresIn: '24h'
         });
 

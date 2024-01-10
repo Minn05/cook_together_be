@@ -15,7 +15,7 @@ import {
 
 export const createUser = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { fullname, email, password, birthday, height, weight }: User = req.body;
+    const { fullname, email, username, password, birthday, height, weight }: User = req.body;
 
     const conn = await connect();
 
@@ -36,14 +36,15 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
 
     var randomNumber = Math.floor(10000 + Math.random() * 90000);
 
-    await conn.query(`CALL SP_REGISTER_USER(?,?,?,?,?,?,?,?,?);`, [
+    await conn.query(`CALL SP_REGISTER_USER(?,?,?,?,?,?,?,?,?,?);`, [
       uuidv4(),
       fullname,
+      username,
+      email,
+      pass,
       birthday,
       height,
       weight,
-      email,
-      pass,
       uuidv4(),
       randomNumber,
     ]);
@@ -237,19 +238,16 @@ export const updatePictureProfile = async (req: Request, res: Response): Promise
 
 export const updateProfile = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { user, description, fullname, phone }: IUpdateProfile = req.body;
+    const { user, fullname, height, weight }: IUpdateProfile = req.body;
 
     const conn = await connect();
 
-    await conn.query('UPDATE users SET username = ?, description = ? WHERE person_uid = ?', [
-      user,
-      description,
-      req.idPerson,
-    ]);
+    await conn.query('UPDATE users SET username = ? WHERE person_uid = ?', [user, req.idPerson]);
 
-    await conn.query('UPDATE person SET fullname = ?, phone = ? WHERE uid = ?', [
+    await conn.query('UPDATE person SET fullname = ?, height = ? , weight = ? WHERE uid = ?', [
       fullname,
-      phone,
+      height,
+      weight,
       req.idPerson,
     ]);
 
@@ -373,8 +371,7 @@ export const searchByKeyWord = async (req: Request, res: Response): Promise<Resp
       resp: true,
       message: 'Search with data',
       user: userdb[0][0],
-    //   recipe: userdb[0][1],
-
+      //   recipe: userdb[0][1],
     });
   } catch (err) {
     return res.status(500).json({
@@ -391,7 +388,7 @@ export const getAnotherUserById = async (req: Request, res: Response): Promise<R
     const [userdb] = await conn.query<RowDataPacket[]>(`CALL SP_GET_USER_BY_ID(?);`, [
       req.params.idUser,
     ]);
-  
+
     const posters = await conn.query<RowDataPacket[]>(
       '	SELECT COUNT(person_uid) AS posters FROM posts WHERE person_uid = ?',
       [req.params.idUser]
@@ -413,7 +410,7 @@ export const getAnotherUserById = async (req: Request, res: Response): Promise<R
     ]);
     const isPendingFollowers = await conn.query<RowDataPacket[]>(
       `CALL SP_IS_PENDING_FOLLOWER(?,?)`,
-      [req.params.idUser, req.idPerson]
+      [req.idPerson, req.params.idUser]
     );
 
     conn.end();
@@ -474,10 +471,10 @@ export const AddNewFollowing = async (req: Request, res: Response): Promise<Resp
       });
     }
 
-    await conn.query(
-      'INSERT INTO notifications (uid_notification, type_notification, person_uid, followers_uid) VALUE (?,?,?,?)',
-      [uuidv4(), '1', uidFriend, req.idPerson]
-    );
+    // await conn.query(
+    //   'INSERT INTO notifications (uid_notification, type_notification, followers_uid, person_uid) VALUE (?,?,?,?)',
+    //   [uuidv4(), '1', uidFriend, req.idPerson]
+    // );
 
     conn.end();
 
@@ -652,3 +649,56 @@ export const updateOfflineUser = async (uid: string) => {
 
   conn.end();
 };
+
+export const getCallByUser = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const conn = await connect();
+    const messagesdb = await conn.query<RowDataPacket[]>(`SELECT * FROM call_video WHERE uid = ?`, [
+      req.params.id,
+    ]);
+
+    conn.end();
+
+    return res.json({
+      resp: true,
+      message: 'Get call by user',
+      caller: messagesdb[0][0],
+    });
+  } catch (err) {
+    return res.status(500).json({
+      resp: false,
+      message: err,
+    });
+  }
+};
+export const addNewCalling = async (call: ICalling) => {
+  const conn = await connect();
+  await conn.query(
+    'INSERT INTO call_video (uid,caller_uid,receiver_id,call_name,receiver_name,caller_avatar,receiver_avatar,channel_id,channel_name,is_disabled) VALUE (?,?,?,?,?,?,?,?,?,?)',
+    [
+      uuidv4(),
+      call.callerId,
+      call.receiverId,
+      call.callerName,
+      call.receiverName,
+      call.callerAvatar,
+      call.receiverAvatar,
+      call.channelId,
+      call.channelName,
+      call.isDisabled,
+    ]
+  );
+  conn.end();
+};
+
+export interface ICalling {
+  isDisabled: boolean;
+  callerId: string;
+  callerName: string;
+  callerAvatar: string;
+  receiverId: string;
+  receiverName: string;
+  receiverAvatar: string;
+  channelId: string;
+  channelName: string;
+}

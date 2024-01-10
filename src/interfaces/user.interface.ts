@@ -1,6 +1,6 @@
 
 export interface User {
-
+    username: string;
     fullname: string;
     email: string;
     password: string;
@@ -11,9 +11,9 @@ export interface User {
 
 export interface IUpdateProfile {
     user?: string;
-    description?: string;
     fullname?: string;
-    phone?: string;
+    height?: Number;
+    weight?: Number;
 }
 
 export interface IChangePassword {

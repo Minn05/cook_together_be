@@ -14,11 +14,11 @@ const router = Router();
       verifyToken,
       recipe.getDetailRecipeById
     )
-    router.get(
-      '/recipe/get-members-recipe-by-id/:id',
-      verifyToken,
-      recipe.getMemberRecipeById
-    )
+    // router.get(
+    //   '/recipe/get-members-recipe-by-id/:id',
+    //   verifyToken,
+    //   recipe.getMemberRecipeById
+    // )
     router.get(
       '/recipe/get-recipe-by-id-extra/:id',
       verifyToken,
@@ -32,7 +32,7 @@ const router = Router();
     // router.post('/recipe/join-recipe', verifyToken, recipe.joinRecipeByUser) 
     router.post('/recipe/save-recipe', verifyToken, recipe.saveAndUnSaveRecipeByUser) 
     // router.post('/recipe/add-role-user', verifyToken, recipe.addRoleForUserOfRecipe)
-    router.post('/recipe/rate-recipe', verifyToken, recipe.addRateRecipe)
+    // router.post('/recipe/rate-recipe', verifyToken, recipe.addRateRecipe)
     router.get(
       '/recipe/get-list-saved-recipes',
       verifyToken,

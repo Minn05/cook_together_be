@@ -2,7 +2,7 @@
 export interface IVerifyUser {
 
     email: string;
-    passwordd: string;
+    password: string;
     email_verified: boolean;
 
 }
