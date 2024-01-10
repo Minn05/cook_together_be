@@ -270,31 +270,31 @@ export const getCommentsByIdPost = async (req: Request, res: Response): Promise<
 
 }
 
-export const addNewComment = async (req: Request, res: Response): Promise<Response> => {
+// export const addNewComment = async (req: Request, res: Response): Promise<Response> => {
 
-    try {
+//     try {
 
-        const { uidPost, comment }: INewComment = req.body;
+//         const { uidPost, comment }: INewComment = req.body;
 
-        const conn = await connect();
+//         const conn = await connect();
 
-        await conn.query('INSERT INTO comments (uid, comment, person_uid, post_uid) VALUE (?,?,?,?)',[ uuidv4(), comment, req.idPerson,  uidPost ]);
+//         await conn.query('INSERT INTO comments (uid, comment, person_uid, post_uid) VALUE (?,?,?,?)',[ uuidv4(), comment, req.idPerson,  uidPost ]);
 
-        conn.end();
+//         conn.end();
 
-        return res.json({
-            resp: true,
-            message: 'New comment'
-        });
+//         return res.json({
+//             resp: true,
+//             message: 'New comment'
+//         });
 
-    } catch(err) {
-        return res.status(500).json({
-            resp: false,
-            message: err
-        });
-    }
+//     } catch(err) {
+//         return res.status(500).json({
+//             resp: false,
+//             message: err
+//         });
+//     }
 
-}
+// }
 
 export const likeOrUnLikeComment = async (req: Request, res: Response): Promise<Response> => {
 

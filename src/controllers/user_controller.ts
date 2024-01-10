@@ -91,7 +91,7 @@ export const getUserById = async (req: Request, res: Response): Promise<Response
       resp: true,
       message: 'Get User by id',
       user: userdb[0][0],
-      posts: {
+      recipes: {
         posters: posters[0][0].posters,
         friends: friends[0][0].friends,
         followers: followers[0][0].followers,
@@ -391,7 +391,7 @@ export const getAnotherUserById = async (req: Request, res: Response): Promise<R
     const [userdb] = await conn.query<RowDataPacket[]>(`CALL SP_GET_USER_BY_ID(?);`, [
       req.params.idUser,
     ]);
-
+  
     const posters = await conn.query<RowDataPacket[]>(
       '	SELECT COUNT(person_uid) AS posters FROM posts WHERE person_uid = ?',
       [req.params.idUser]
@@ -404,7 +404,7 @@ export const getAnotherUserById = async (req: Request, res: Response): Promise<R
       'SELECT COUNT(person_uid) AS followers FROM followers WHERE person_uid = ?',
       [req.params.idUser]
     );
-    const posts = await conn.query<RowDataPacket[]>(`CALL SP_GET_POST_BY_IDPERSON(?);`, [
+    const recipes = await conn.query<RowDataPacket[]>(`CALL SP_GET_RECIPE_BY_IDPERSON(?);`, [
       req.params.idUser,
     ]);
     const isFollowing = await conn.query<RowDataPacket[]>('CALL SP_IS_FRIEND(?,?);', [
@@ -427,7 +427,7 @@ export const getAnotherUserById = async (req: Request, res: Response): Promise<R
         friends: friends[0][0].friends,
         followers: followers[0][0].followers,
       },
-      postsUser: posts[0][0],
+      recipesUser: recipes[0][0],
       is_friend: isFollowing[0][0][0].is_friend,
       isPendingFollowers: isPendingFollowers[0][0][0].is_pending_follower,
     });
@@ -475,7 +475,7 @@ export const AddNewFollowing = async (req: Request, res: Response): Promise<Resp
     }
 
     await conn.query(
-      'INSERT INTO notifications (uid_notification, type_notification, user_uid, followers_uid) VALUE (?,?,?,?)',
+      'INSERT INTO notifications (uid_notification, type_notification, person_uid, followers_uid) VALUE (?,?,?,?)',
       [uuidv4(), '1', uidFriend, req.idPerson]
     );
 

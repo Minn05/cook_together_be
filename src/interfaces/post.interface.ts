@@ -18,7 +18,7 @@ export interface ILikePost {
 }
 
 export interface INewComment {
-    uidPost: string,
+  uidRecipe: string,
     comment: string
 }
 

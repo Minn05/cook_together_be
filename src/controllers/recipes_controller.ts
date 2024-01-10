@@ -298,61 +298,6 @@ export const saveAndUnSaveRecipeByUser = async (req: Request, res: Response): Pr
     });
   }
 };
-// export const joinRecipeByUser = async (req: Request, res: Response): Promise<Response> => {
-
-//     try {
-
-//         const { recipe_uid,type,date_start,date_end }: IJoinRecipe = req.body;
-
-//         const conn = await connect();
-
-//         const checkMatch = await conn.query<RowDataPacket[]>(
-//           'CALL SP_CHECK_DUPLICATE_RECIPE(?,?,?)',
-//           [req.idPerson, date_start, date_end]
-//         )
-//         console.log(checkMatch[0])
-//         console.log(checkMatch[0][0])
-//         console.log(checkMatch[0][1])
-
-//         if (
-//           checkMatch[0][0]?.countRecipeCreated !== 0 &&
-//           checkMatch[0][1]?.countRecipeJoined
-//         ) {
-//           conn.end()
-//           return res.status(500).json({
-//             resp: false,
-//             message: 'Lỗi đã trùng với chuyến đi khác.',
-//           })
-//         } else {
-//           if (type === 'join') {
-//             await conn.query(
-//               'INSERT INTO recipe_members(uid, recipe_uid, person_uid) VALUE (?,?,?)',
-//               [uuidv4(), recipe_uid, req.idPerson]
-//             )
-//           }
-
-//           if (type === 'cancel') {
-//             await conn.query(
-//               ' DELETE FROM recipe_members WHERE recipe_uid = ? AND person_uid = ?',
-//               [recipe_uid, req.idPerson]
-//             )
-//           }
-//            conn.end()
-
-//            return res.json({
-//              resp: true,
-//              message: 'Joined Recipe',
-//            })
-//         }
-
-//     } catch(err) {
-//         return res.status(500).json({
-//             resp: false,
-//             message: err
-//         });
-//     }
-
-// }
 
 export const addRateRecipe = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -378,36 +323,6 @@ export const addRateRecipe = async (req: Request, res: Response): Promise<Respon
     });
   }
 };
-
-// export const addRoleForUserOfRecipe = async (
-//   req: Request,
-//   res: Response
-// ): Promise<Response> => {
-//   try {
-//     const { recipe_uid, role, recipe_member_uid }: IRoleRecipe =
-//       req.body
-//       console.log(req.body);
-
-//     const conn = await connect()
-
-//     await conn.query(
-//       'UPDATE recipe_members SET recipe_role = ? WHERE uid = ?',
-//       [role,recipe_member_uid]
-//     )
-
-//     conn.end()
-
-//     return res.json({
-//       resp: true,
-//       message: 'Added role Recipe',
-//     })
-//   } catch (err) {
-//     return res.status(500).json({
-//       resp: false,
-//       message: err,
-//     })
-//   }
-// }
 
 export const getListSavedRecipesByUser = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -488,57 +403,19 @@ export const likeOrUnLikeRecipe = async (req: Request, res: Response): Promise<R
     });
   }
 
-  // try {
-
-  //     const { recipe_uid, person_uid }: ILikePost = req.body;
-
-  //     const conn = await connect();
-
-  //     const isLikedb = await conn.query<RowDataPacket[]>('SELECT COUNT(uid) AS uid FROM recipe_wishlist WHERE person_uid = ? AND recipe_uid = ? LIMIT 1', [ req.idPerson, recipe_uid ]);
-
-  //     if( isLikedb[0][0].uid > 0 ){
-
-  //         await conn.query('DELETE FROM recipe_wishlist WHERE person_uid  = ? AND recipe_uid = ?', [ req.idPerson, recipe_uid ]);
-
-  //         await conn.query('DELETE FROM notifications WHERE type_notification = 2 AND person_uid = ? AND recipe_uid = ?', [ person_uid, recipe_uid ]);
-
-  //         conn.end();
-
-  //         return res.json({
-  //             resp: true,
-  //             message: 'unlike',
-  //         });
-
-  //     }
-
-  //     await conn.query('INSERT INTO recipe_wishlist (uid, person_uid, recipe_uid) VALUE (?,?,?)', [ uuidv4(), req.idPerson, recipe_uid ]);
-
-  //     await conn.query('INSERT INTO notifications (uid_notification, type_notification, person_uid, followers_uid, recipe_uid) VALUE (?,?,?,?,?)', [uuidv4(), 2, person_uid, req.idPerson, recipe_uid ]);
-
-  //     conn.end();
-
-  //     return res.json({
-  //         resp: true,
-  //         message: 'like',
-  //     });
-
-  // } catch(err) {
-  //     return res.status(500).json({
-  //         resp: false,
-  //         message: err
-  //     });
-  // }
 };
 
 export const getCommentsByIdRecipe = async (req: Request, res: Response): Promise<Response> => {
   try {
     const conn = await connect();
-
-    const commentsdb = await conn.query<RowDataPacket[]>(`CALL SP_GET_COMMNETS_BY_UIDPOST(?);`, [
-      req.params.uidPost,
+    console.log(req.params.uidRecipe);
+    
+    const commentsdb = await conn.query<RowDataPacket[]>(`CALL SP_GET_COMMNETS_BY_UIDRECIPE(?);`, [
+      req.params.uidRecipe,
     ]);
 
     conn.end();
+console.log(commentsdb[0][0]);
 
     return res.json({
       resp: true,
@@ -555,15 +432,15 @@ export const getCommentsByIdRecipe = async (req: Request, res: Response): Promis
 
 export const addNewComment = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { uidPost, comment }: INewComment = req.body;
+    const { uidRecipe, comment }: INewComment = req.body;
 
     const conn = await connect();
 
-    await conn.query('INSERT INTO comments (uid, comment, person_uid, post_uid) VALUE (?,?,?,?)', [
+    await conn.query('INSERT INTO comments (uid, comment, person_uid, recipe_uid) VALUE (?,?,?,?)', [
       uuidv4(),
       comment,
       req.idPerson,
-      uidPost,
+      uidRecipe,
     ]);
 
     conn.end();
@@ -573,6 +450,8 @@ export const addNewComment = async (req: Request, res: Response): Promise<Respon
       message: 'New comment',
     });
   } catch (err) {
+    console.log(err);
+    
     return res.status(500).json({
       resp: false,
       message: err,
